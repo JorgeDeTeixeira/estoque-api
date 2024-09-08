@@ -25,12 +25,23 @@ const estoqueController = {
   async findById(req, res) {
     try {
       const { id } = req.params;
+      const usuarioId = req.user.id; // Obtendo o id do usuário logado
+
+      // Encontre o estoqueb pelo id
       const estoque = await Estoque.findById(id);
-      if (estoque) {
-        res.status(200).json(estoque);
-      } else {
-        res.status(401).json({ message: "Stock not found" });
+
+      if (!estoque) {
+        return res.status(401).json({ message: "Stock not found" });
       }
+
+      // Verifica se o estoque pertence ao usuário logado
+      if (estoque.usuario_id !== usuarioId) {
+        return res
+          .status(403)
+          .json({ message: "Access denied. Stock does not belong to user" });
+      }
+
+      return res.status(200).json(estoque);
     } catch (error) {
       res.status(500).json({ message: "Error fetching stock", error });
     }
