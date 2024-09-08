@@ -1,4 +1,5 @@
 const Estoque = require("../models/estoqueModel");
+const Item = require("../models/itemModel");
 
 const estoqueController = {
   async create(req, res) {
@@ -25,7 +26,13 @@ const estoqueController = {
   async findAll(req, res) {
     try {
       const estoques = await Estoque.findAll();
-      res.status(200).json(estoques);
+      const estoqueComItens = await Promise.all(
+        estoques.map(async (estoque) => {
+          const itens = await Item.findByEstoque(estoque.id);
+          return { ...estoque, itens };
+        })
+      );
+      res.status(200).json(estoqueComItens);
     } catch (erro) {
       res.status(500).json({ message: "Error fetching stocks", erro });
     }
@@ -50,8 +57,8 @@ const estoqueController = {
           .status(403)
           .json({ message: "Access denied. Stock does not belong to user" });
       }
-
-      return res.status(200).json(estoque);
+      const itens = await Item.findByEstoque(id);
+      return res.status(200).json({ ...estoque, itens });
     } catch (error) {
       res.status(500).json({ message: "Error fetching stock", error });
     }
