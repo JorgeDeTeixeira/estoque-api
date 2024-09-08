@@ -1,16 +1,14 @@
 const express = require("express");
 const router = express.Router();
 const itemController = require("../controllers/itemController");
-//const { authenticateToken } = require("../middlewares/authMiddleware");
-
-//router.use(authenticateToken);
+const { authenticateToken, isAdmin } = require("../middleware/auth");
 
 // Rotas de crud de itens
-router.post("/", itemController.create);
-router.get("/", itemController.findAll);
-router.get("/:id", itemController.findById);
-router.get("/estoque/:id", itemController.findByEstoque);
-router.put("/:id", itemController.update);
-router.delete("/:id", itemController.delete);
+router.post("/", authenticateToken, itemController.create);
+router.get("/", authenticateToken, itemController.findAll);
+router.get("/:id", authenticateToken, itemController.findById);
+router.get("/estoque/:id", authenticateToken, itemController.findByEstoque);
+router.put("/:id", authenticateToken, itemController.update);
+router.delete("/:id", authenticateToken, itemController.delete);
 
 module.exports = router;
