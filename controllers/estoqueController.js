@@ -26,6 +26,7 @@ const estoqueController = {
     try {
       const { id } = req.params;
       const usuarioId = req.user.id; // Obtendo o id do usuário logado
+      const usuarioAdmin = req.user.role; // Obtendo o role do usuário logado
 
       // Encontre o estoqueb pelo id
       const estoque = await Estoque.findById(id);
@@ -34,8 +35,8 @@ const estoqueController = {
         return res.status(401).json({ message: "Stock not found" });
       }
 
-      // Verifica se o estoque pertence ao usuário logado
-      if (estoque.usuario_id !== usuarioId) {
+      // Verifique se o estoque pertence ao usuário logado ou se o usuário é um admin
+      if (estoque.usuario_id !== usuarioId && usuarioAdmin !== "admin") {
         return res
           .status(403)
           .json({ message: "Access denied. Stock does not belong to user" });
