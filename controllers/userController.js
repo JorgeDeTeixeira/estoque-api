@@ -12,13 +12,18 @@ const userController = {
       return res.status(400).json({ message: "Username already exists" });
     }
 
-    // Criptragrafa a senha
-    const hashedPassword = await bcrypt.hash(password, 10);
+    try {
+      // Gera um hash da senha
+      const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Cria o usuário
-    await User.create(username, hashedPassword);
-
-    return res.status(201).json({ message: "User registered successfully" });
+      //Salva o usuário no banco de dados com a senha criptografada
+      const result = await User.create(username, hashedPassword);
+      res.status(201).json({ id: result.insertId, username });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error registering user", error: error.message });
+    }
   },
 
   async login(req, res) {
@@ -45,6 +50,22 @@ const userController = {
       }
     );
     return res.json({ token });
+  },
+
+  async delete(req, res) {
+    try {
+      const { id } = req.params;
+      const result = await User.delete(id);
+      if (result.affectedRows > 0) {
+        return res.status(200).json({ message: "User deleted successfully" });
+      } else {
+        return res.status(404).json({ message: "User not found" });
+      }
+    } catch (error) {
+      return res
+        .status(500)
+        .json({ message: "Error deleting user", erro: error.message });
+    }
   },
 };
 
