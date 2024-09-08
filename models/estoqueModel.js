@@ -21,6 +21,14 @@ const Estoque = {
     return rows[0];
   },
 
+  async findByUserId(usuarioId) {
+    const [rows] = await pool.query(
+      "SELECT * FROM estoques WHERE usuario_id = ?",
+      [usuarioId]
+    );
+    return rows;
+  },
+
   async update(id, nome, localizacao) {
     const [result] = await pool.query(
       "UPDATE estoques set nome = ?, localizacao = ? WHERE id = ?",

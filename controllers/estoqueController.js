@@ -4,6 +4,15 @@ const estoqueController = {
   async create(req, res) {
     try {
       const { nome, localizacao, usuario_id } = req.body;
+      const usuarioAdmin = req.user.role; // Obtendo o role do usuário logado
+
+      // Verifica se o usuário já possui estoque
+      const existingEstoque = await Estoque.findByUserId(usuario_id);
+
+      if (existingEstoque.length > 0) {
+        return res.status(403).json({ message: "User already has a stock" });
+      }
+
       const result = await Estoque.create(nome, localizacao, usuario_id);
       res
         .status(201)
