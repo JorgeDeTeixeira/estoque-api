@@ -4,28 +4,29 @@ const Item = require("../models/itemModel");
 const estoqueController = {
   async create(req, res) {
     try {
-      const { nome, localizacao, usuario_id } = req.body;
-      const usuarioAdmin = req.user.role; // Obtendo o role do usuário logado
+      const { nome, localizacao, usuarioId } = req.body;
 
       // Verifica se o usuário já possui estoque
-      const existingEstoque = await Estoque.findByUserId(usuario_id);
+      const existingEstoque = await Estoque.findStocksByUserId(usuarioId);
 
       if (existingEstoque.length > 0) {
         return res.status(403).json({ message: "User already has a stock" });
       }
 
-      const result = await Estoque.create(nome, localizacao, usuario_id);
+      const result = await Estoque.createStock(nome, localizacao, usuarioId);
       res
         .status(201)
-        .json({ id: result.insertId, nome, localizacao, usuario_id });
+        .json({ id: result.insertId, nome, localizacao, usuarioId });
     } catch (error) {
-      res.status(500).json({ message: "Error creating stock", error });
+      res
+        .status(500)
+        .json({ message: "Error creating stock", error: error.message });
     }
   },
 
   async findAll(req, res) {
     try {
-      const estoques = await Estoque.findAll();
+      const estoques = await Estoque.findAllStocks();
       const estoqueComItens = await Promise.all(
         estoques.map(async (estoque) => {
           const itens = await Item.findByEstoque(estoque.id);
@@ -33,8 +34,10 @@ const estoqueController = {
         })
       );
       res.status(200).json(estoqueComItens);
-    } catch (erro) {
-      res.status(500).json({ message: "Error fetching stocks", erro });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ message: "Error fetching stocks", error: error.message });
     }
   },
 
@@ -45,7 +48,7 @@ const estoqueController = {
       const usuarioAdmin = req.user.role; // Obtendo o role do usuário logado
 
       // Encontre o estoqueb pelo id
-      const estoque = await Estoque.findById(id);
+      const estoque = await Estoque.findStockById(id);
 
       if (!estoque) {
         return res.status(401).json({ message: "Stock not found" });
@@ -60,7 +63,9 @@ const estoqueController = {
       const itens = await Item.findByEstoque(id);
       return res.status(200).json({ ...estoque, itens });
     } catch (error) {
-      res.status(500).json({ message: "Error fetching stock", error });
+      res
+        .status(500)
+        .json({ message: "Error fetching stock", error: error.message });
     }
   },
 
@@ -68,28 +73,32 @@ const estoqueController = {
     try {
       const { id } = req.params;
       const { nome, localizacao } = req.body;
-      const result = await Estoque.update(id, nome, localizacao);
+      const result = await Estoque.updateStock(id, nome, localizacao);
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Stock updated successfully" });
       } else {
         res.status(401).json({ message: "Stock not found" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error updating stock", error });
+      res
+        .status(500)
+        .json({ message: "Error updating stock", error: error.message });
     }
   },
 
   async delete(req, res) {
     try {
       const { id } = req.params;
-      const result = await Estoque.delete(id);
+      const result = await Estoque.deleteStock(id);
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Stock deleted successfully" });
       } else {
         res.status(400).json({ message: "Stock not found" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error deleting stock", error });
+      res
+        .status(500)
+        .json({ message: "Error deleting stock", error: error.message });
     }
   },
 };
