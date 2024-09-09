@@ -84,9 +84,9 @@ const estoqueController = {
       const { id } = req.params;
       const result = await Estoque.delete(id);
       if (result.affectedRows > 0) {
-        res.status(204).json({ message: "Stock deleted successfully" });
+        res.status(200).json({ message: "Stock deleted successfully" });
       } else {
-        res.status(401).json({ message: "Stock not found" });
+        res.status(400).json({ message: "Stock not found" });
       }
     } catch (error) {
       res.status(500).json({ message: "Error deleting stock", error });
