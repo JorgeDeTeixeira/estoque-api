@@ -7,17 +7,14 @@ const userController = {
     const { username, password } = req.body;
 
     // Verifica se o usuário já existe
-    const existingUser = await User.findByUsername(username);
+    const existingUser = await User.findUserByUsername(username);
     if (existingUser) {
       return res.status(400).json({ message: "Username already exists" });
     }
 
     try {
-      // Gera um hash da senha
-      const hashedPassword = await bcrypt.hash(password, 10);
-
       //Salva o usuário no banco de dados com a senha criptografada
-      const result = await User.create(username, hashedPassword);
+      const result = await User.createUser(username, password);
       res.status(201).json({ id: result.insertId, username });
     } catch (error) {
       res
@@ -30,7 +27,7 @@ const userController = {
     const { username, password } = req.body;
 
     // Busca o usuário no banco de dados
-    const user = await User.findByUsername(username);
+    const user = await User.findUserByUsername(username);
     if (!user) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
