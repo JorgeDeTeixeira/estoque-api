@@ -5,9 +5,9 @@ const { authenticateToken, isAdmin } = require("../middleware/auth");
 
 // Rotas de crud de itens
 router.post("/", authenticateToken, itemController.create);
-router.get("/", authenticateToken, itemController.findAll);
+router.get("/", authenticateToken, isAdmin, itemController.findAll);
 router.get("/:id", authenticateToken, itemController.findById);
-router.get("/estoque/:id", authenticateToken, itemController.findByEstoque);
+router.get("/estoque/:estoque_id", authenticateToken, itemController.findByEstoque);
 router.put("/:id", authenticateToken, itemController.update);
 router.delete("/:id", authenticateToken, itemController.delete);
 

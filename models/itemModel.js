@@ -27,6 +27,22 @@ const Item = {
     return rows;
   },
 
+  async findEstoqueByUserId(usuarioId) {
+    const [rows] = await pool.query(
+      "SELECT * FROM estoques WHERE usuario_id = ?",
+      [usuarioId]
+    );
+    return rows;
+  },
+
+  async findEstoqueByItemId(itemId) {
+    const [rows] = await pool.query(
+      "SELECT * FROM estoques WHERE id = (SELECT estoque_id FROM itens WHERE id = ?)",
+      [itemId]
+    );
+    return rows;
+  },
+
   async update(id, nome, quantidade, descricao, preco) {
     const [result] = await pool.query(
       "UPDATE itens SET nome = ?, quantidade = ?, descricao = ?, preco = ? WHERE id = ?",

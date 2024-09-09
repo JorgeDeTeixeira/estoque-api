@@ -8,17 +8,14 @@ const itemController = {
       const usuarioId = req.user.id; // Pega o id do usuário logado
 
       // Verifica se o estoque_id informado existe
-      const [estoque] = await pool.query(
-        "SELECT * FROM estoques WHERE id = ?",
-        [usuarioId]
-      );
-      if (!estoque.length) {
+      const estoques = await Item.findEstoqueByUserId(usuarioId);
+      if (estoques.length === 0) {
         return res
           .status(404)
           .json({ message: "Estoque não encontrado para esse usuário." });
       }
 
-      const estoque_id = estoque[0].id; // Pega o estoque do usuário logado
+      const estoque_id = estoques[0].id; // Pega o estoque do usuário logado
 
       const result = await Item.create(
         nome,
@@ -59,10 +56,21 @@ const itemController = {
     try {
       const { id } = req.params;
       const item = await Item.findById(id);
+
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      // Verifica se o item pertence ao usuário logado
+      const estoques = await Item.findEstoqueByItemId(id);
+      if (estoques.length === 0 || estoques[0].usuario_id !== req.user.id) {
+        return res
+          .status(403)
+          .json({ message: "Você não tem permissão para acessar esse item" });
+      }
+
       if (item) {
         res.status(200).json(item);
-      } else {
-        res.status(404).json({ message: "Item not found" });
       }
     } catch (error) {
       res
@@ -74,17 +82,33 @@ const itemController = {
   async findByEstoque(req, res) {
     try {
       const { estoque_id } = req.params;
+      const usuarioId = req.user.id; // Obtendo o id do usuário logado
+
+      // Verifica se o estoque pertence ao usuário logado
+      const [estoque] = await pool.query(
+        "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
+        [estoque_id, usuarioId]
+      );
+
+      if (!estoque.length) {
+        return res
+          .status(403)
+          .json({ message: "Estoque não encontrado para esse usuário." });
+      }
+
+      // Se o estoque pertence ao usuário, busca os itens desse estoque
       const items = await Item.findByEstoque(estoque_id);
-      console.log(items);
       if (items.length) {
         res.status(200).json(items);
       } else {
-        res.status(400).json({ message: "No items found for this stokc" });
+        res
+          .status(404)
+          .json({ message: "Nenhum item encontrado para este estoque" });
       }
     } catch (error) {
       res
         .status(500)
-        .json({ message: "Error getting items", error: error.message });
+        .json({ message: "Erro ao buscar itens", error: error.message });
     }
   },
 
