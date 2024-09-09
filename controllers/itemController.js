@@ -4,15 +4,22 @@ const pool = require("../config/db");
 const itemController = {
   async create(req, res) {
     try {
-      const { nome, quantidade, descricao, preco, estoque_id } = req.body;
+      const { nome, quantidade, descricao, preco } = req.body;
+      const usuarioId = req.user.id; // Pega o id do usuário logado
+
       // Verifica se o estoque_id informado existe
       const [estoque] = await pool.query(
         "SELECT * FROM estoques WHERE id = ?",
-        [estoque_id]
+        [usuarioId]
       );
       if (!estoque.length) {
-        return res.status(404).json({ message: "Estoque não encontrado" });
+        return res
+          .status(404)
+          .json({ message: "Estoque não encontrado para esse usuário." });
       }
+
+      const estoque_id = estoque[0].id; // Pega o estoque do usuário logado
+
       const result = await Item.create(
         nome,
         quantidade,
@@ -20,7 +27,9 @@ const itemController = {
         preco,
         estoque_id
       );
+
       res.status(201).json({
+        message: "Item created",
         id: result.insertId,
         nome,
         quantidade,
@@ -40,7 +49,9 @@ const itemController = {
       const items = await Item.findAll();
       res.status(200).json(items);
     } catch (error) {
-      res.status(500).json({ message: "Error getting items", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Error getting items", error: error.message });
     }
   },
 
@@ -54,7 +65,9 @@ const itemController = {
         res.status(404).json({ message: "Item not found" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error getting item", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Error getting item", error: error.message });
     }
   },
 
@@ -69,7 +82,9 @@ const itemController = {
         res.status(400).json({ message: "No items found for this stokc" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error getting items", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Error getting items", error: error.message });
     }
   },
 
@@ -84,7 +99,9 @@ const itemController = {
         res.status(404).json({ message: "Item not found" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error updating item", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Error updating item", error: error.message });
     }
   },
 
@@ -98,7 +115,9 @@ const itemController = {
         res.status(404).json({ message: "Item not found" });
       }
     } catch (error) {
-      res.status(500).json({ message: "Error deleting item", error: error.message });
+      res
+        .status(500)
+        .json({ message: "Error deleting item", error: error.message });
     }
   },
 };
