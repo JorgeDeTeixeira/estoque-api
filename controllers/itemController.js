@@ -92,6 +92,25 @@ const itemController = {
     try {
       const { id } = req.params;
       const { nome, quantidade, descricao, preco } = req.body;
+      const usuarioId = req.user.id; // Pega o id do usuário logado
+
+      const item = await Item.findById(id);
+
+      if (!item) {
+        return res.status(404).json({ message: "Item not found" });
+      }
+
+      const [estoque] = await pool.query(
+        "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
+        [item.estoque_id, usuarioId]
+      );
+
+      if (!estoque.length) {
+        return res
+          .status(403)
+          .json({ message: "Você não tem permissão para alterar esse item" });
+      }
+
       const result = await Item.update(id, nome, quantidade, descricao, preco);
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Item updated" });
