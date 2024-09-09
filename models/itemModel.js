@@ -43,6 +43,14 @@ const Item = {
     return rows;
   },
 
+  async checkEstoqueOwnership(estoque_id, usuarioId) {
+    const [rows] = await pool.query(
+      "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
+      [estoque_id, usuarioId]
+    );
+    return rows;
+  },
+
   async update(id, nome, quantidade, descricao, preco) {
     const [result] = await pool.query(
       "UPDATE itens SET nome = ?, quantidade = ?, descricao = ?, preco = ? WHERE id = ?",

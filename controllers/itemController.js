@@ -1,5 +1,4 @@
 const Item = require("../models/itemModel");
-const pool = require("../config/db");
 
 const itemController = {
   async create(req, res) {
@@ -85,10 +84,8 @@ const itemController = {
       const usuarioId = req.user.id; // Obtendo o id do usuário logado
 
       // Verifica se o estoque pertence ao usuário logado
-      const [estoque] = await pool.query(
-        "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
-        [estoque_id, usuarioId]
-      );
+      // Verifica se o estoque pertence ao usuário logado
+      const estoque = await Item.checkEstoqueOwnership(estoque_id, usuarioId);
 
       if (!estoque.length) {
         return res
@@ -124,9 +121,9 @@ const itemController = {
         return res.status(404).json({ message: "Item not found" });
       }
 
-      const [estoque] = await pool.query(
-        "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
-        [item.estoque_id, usuarioId]
+      const estoque = await Item.checkEstoqueOwnership(
+        item.estoque_id,
+        usuarioId
       );
 
       if (!estoque.length) {
@@ -158,9 +155,9 @@ const itemController = {
         return res.status(404).json({ message: "Item not found" });
       }
 
-      const [estoque] = await pool.query(
-        "SELECT * FROM estoques WHERE id = ? AND usuario_id = ?",
-        [item.estoque_id, usuarioId]
+      const estoque = await Item.checkEstoqueOwnership(
+        item.estoque_id,
+        usuarioId
       );
 
       if (!estoque.length) {
