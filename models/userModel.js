@@ -31,6 +31,17 @@ const User = {
       throw new Error("Erro ao encontrar usuário");
     }
   },
+
+  // Deleta um usuário pelo id
+  async deleteByUserId(id) {
+    try {
+      const [result] = await pool.query("DELETE FROM users WHERE id = ?", [id]);
+      return result;
+    } catch (error) {
+      console.error("Erro ao deletar o usuário:", error.message);
+      throw new Error("Erro ao deletar o usuário");
+    }
+  },
 };
 
 module.exports = User;

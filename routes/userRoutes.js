@@ -8,4 +8,7 @@ router.post("/register", authenticateToken, isAdmin, userController.register);
 // Rota para fazer login
 router.post("/login", userController.login);
 
+// Rota de admim para deleter um usuário
+router.delete("/:id", authenticateToken, isAdmin, userController.delete);
+
 module.exports = router;
