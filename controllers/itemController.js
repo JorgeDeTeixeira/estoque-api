@@ -16,7 +16,7 @@ const itemController = {
 
       const estoque_id = estoques[0].id; // Pega o estoque do usuário logado
 
-      const result = await Item.create(
+      const result = await Item.createItem(
         nome,
         quantidade,
         descricao,
@@ -42,7 +42,7 @@ const itemController = {
 
   async findAll(req, res) {
     try {
-      const items = await Item.findAll();
+      const items = await Item.findAllItems();
       res.status(200).json(items);
     } catch (error) {
       res
@@ -54,7 +54,7 @@ const itemController = {
   async findById(req, res) {
     try {
       const { id } = req.params;
-      const item = await Item.findById(id);
+      const item = await Item.findItemById(id);
 
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
@@ -84,7 +84,6 @@ const itemController = {
       const usuarioId = req.user.id; // Obtendo o id do usuário logado
 
       // Verifica se o estoque pertence ao usuário logado
-      // Verifica se o estoque pertence ao usuário logado
       const estoque = await Item.checkEstoqueOwnership(estoque_id, usuarioId);
 
       if (!estoque.length) {
@@ -94,7 +93,7 @@ const itemController = {
       }
 
       // Se o estoque pertence ao usuário, busca os itens desse estoque
-      const items = await Item.findByEstoque(estoque_id);
+      const items = await Item.findItemsByEstoqueId(estoque_id);
       if (items.length) {
         res.status(200).json(items);
       } else {
@@ -115,7 +114,7 @@ const itemController = {
       const { nome, quantidade, descricao, preco } = req.body;
       const usuarioId = req.user.id; // Pega o id do usuário logado
 
-      const item = await Item.findById(id);
+      const item = await Item.findItemById(id);
 
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
@@ -132,7 +131,13 @@ const itemController = {
           .json({ message: "Você não tem permissão para alterar esse item" });
       }
 
-      const result = await Item.update(id, nome, quantidade, descricao, preco);
+      const result = await Item.updateItem(
+        id,
+        nome,
+        quantidade,
+        descricao,
+        preco
+      );
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Item updated" });
       } else {
@@ -150,7 +155,7 @@ const itemController = {
       const { id } = req.params;
       const usuarioId = req.user.id; // Pega o id do usuário logado
 
-      const item = await Item.findById(id);
+      const item = await Item.findItemById(id);
       if (!item) {
         return res.status(404).json({ message: "Item not found" });
       }
@@ -166,7 +171,7 @@ const itemController = {
           .json({ message: "Você não tem permissão para deletar esse item" });
       }
 
-      const result = await Item.delete(id);
+      const result = await Item.deleteItem(id);
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Item deleted" });
       } else {

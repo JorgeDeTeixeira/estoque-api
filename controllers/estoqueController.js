@@ -60,7 +60,8 @@ const estoqueController = {
           .status(403)
           .json({ message: "Access denied. Stock does not belong to user" });
       }
-      const itens = await Item.findByEstoque(id);
+      const itens = await Item.findEstoqueByItemId(id);
+      
       return res.status(200).json({ ...estoque, itens });
     } catch (error) {
       res
