@@ -2,15 +2,32 @@ const Estoque = require("../models/estoqueModel");
 const Item = require("../models/itemModel");
 
 const estoqueController = {
+  // Cria um novo estoque para o usuário
   async create(req, res) {
-    try {
-      const { nome, localizacao, usuarioId } = req.body;
+    const { nome, localizacao, usuarioId } = req.body;
 
+    // Valida a entrada
+    if (!nome) {
+      return res.status(400).json({ message: "Nome é obrigatório" });
+    }
+
+    if (!localizacao) {
+      return res.status(400).json({ message: "Localização é obrigatória" });
+    }
+
+    if (!usuarioId) {
+      return res.status(400).json({
+        message: "Usuário para ser relacionado ao estoque é obrigatório",
+      });
+    }
+
+    try {
       // Verifica se o usuário já possui estoque
       const existingEstoque = await Estoque.findStocksByUserId(usuarioId);
-
       if (existingEstoque.length > 0) {
-        return res.status(403).json({ message: "User already has a stock" });
+        return res
+          .status(403)
+          .json({ message: "Usuário já possui um estoque" });
       }
 
       const result = await Estoque.createStock(nome, localizacao, usuarioId);
@@ -18,88 +35,107 @@ const estoqueController = {
         .status(201)
         .json({ id: result.insertId, nome, localizacao, usuarioId });
     } catch (error) {
+      console.error("Erro ao criar estoque", error.message);
       res
         .status(500)
-        .json({ message: "Error creating stock", error: error.message });
+        .json({ message: "Erro ao criar o estoque", error: error.message });
     }
   },
 
+  // Busca todos os estoques com seus itens associados
   async findAll(req, res) {
     try {
       const estoques = await Estoque.findAllStocks();
       const estoqueComItens = await Promise.all(
         estoques.map(async (estoque) => {
-          const itens = await Item.findByEstoque(estoque.id);
+          const itens = await Item.findItemsByEstoqueId(estoque.id);
           return { ...estoque, itens };
         })
       );
-      res.status(200).json(estoqueComItens);
+      return res.status(200).json(estoqueComItens);
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error fetching stocks", error: error.message });
+      console.log("Erro ao buscar todos os estoques ", error.message);
+      res.status(500).json({
+        message: "Erro ao buscar todos os estoques",
+        error: error.message,
+      });
     }
   },
 
+  // Busca estoque por id
   async findById(req, res) {
-    try {
-      const { id } = req.params;
-      const usuarioId = req.user.id; // Obtendo o id do usuário logado
-      const usuarioAdmin = req.user.role; // Obtendo o role do usuário logado
+    const { id } = req.params;
+    const usuarioId = req.usuarioId;
+    const usuarioAdmin = req.user.role;
 
-      // Encontre o estoqueb pelo id
+    try {
+      // Busca o estoque pelo id
       const estoque = await Estoque.findStockById(id);
 
       if (!estoque) {
-        return res.status(401).json({ message: "Stock not found" });
+        return res.status(404).json({ message: "Estoque não encontrado" });
       }
 
       // Verifique se o estoque pertence ao usuário logado ou se o usuário é um admin
       if (estoque.usuario_id !== usuarioId && usuarioAdmin !== "admin") {
-        return res
-          .status(403)
-          .json({ message: "Access denied. Stock does not belong to user" });
+        return res.status(403).json({
+          message: "Acesso negado. O estoque não pertence ao usuário",
+        });
       }
-      const itens = await Item.findEstoqueByItemId(id);
-      
+      const itens = await Item.findItemsByEstoqueId(id);
+
       return res.status(200).json({ ...estoque, itens });
     } catch (error) {
+      console.error("Erro ao buscar estoque", error.message);
       res
         .status(500)
-        .json({ message: "Error fetching stock", error: error.message });
+        .json({ message: "Erro ao buscar estoque", error: error.message });
     }
   },
 
+  // Atualiza um estoque
   async update(req, res) {
+    const { id } = req.params;
+    const { nome, localizacao } = req.body;
+
+    if (!nome) {
+      return res.status(400).json({ message: "Nome é obrigatório" });
+    }
+
+    if (!localizacao) {
+      return res.status(400).json({ message: "Localização é obrigatória" });
+    }
+
     try {
-      const { id } = req.params;
-      const { nome, localizacao } = req.body;
       const result = await Estoque.updateStock(id, nome, localizacao);
       if (result.affectedRows > 0) {
-        res.status(200).json({ message: "Stock updated successfully" });
+        res.status(200).json({ message: "Estoque atualizado com sucesso" });
       } else {
-        res.status(401).json({ message: "Stock not found" });
+        res.status(404).json({ message: "Estoque não encontrado" });
       }
     } catch (error) {
+      console.error("Erro ao atualizar estoque", error.message);
       res
         .status(500)
-        .json({ message: "Error updating stock", error: error.message });
+        .json({ message: "Erro ao atualizar o estoque", error: error.message });
     }
   },
 
+  // Deleta um estoque
   async delete(req, res) {
+    const { id } = req.params;
     try {
-      const { id } = req.params;
       const result = await Estoque.deleteStock(id);
       if (result.affectedRows > 0) {
-        res.status(200).json({ message: "Stock deleted successfully" });
+        res.status(200).json({ message: "Estoque deletado com sucesso!" });
       } else {
-        res.status(400).json({ message: "Stock not found" });
+        res.status(400).json({ message: "Estoque não encontrado" });
       }
     } catch (error) {
+      console.error("Erro ao deletar estoque", error.message);
       res
         .status(500)
-        .json({ message: "Error deleting stock", error: error.message });
+        .json({ message: "Erro ao deletar estoque", error: error.message });
     }
   },
 };
