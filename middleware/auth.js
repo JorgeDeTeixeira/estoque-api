@@ -27,14 +27,14 @@ function authenticateToken(req, res, next) {
 function isAdmin(req, res, next) {
   // Verifica se o usuário foi definido
   if (!req.user) {
-    return res.status(403).json({ message: "User not authenticated" });
+    return res.status(403).json({ message: "User não autenticado" });
   }
 
   //Verifica o papel do usuário
   if (req.user.role === "admin") {
     next(); // Continua se for admin
   } else {
-    return res.status(403).json({ message: "Access denied. Admins only" });
+    return res.status(403).json({ message: "Acesso negado. Apenas usúarios autorizados" });
   }
 }
 
