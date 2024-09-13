@@ -90,9 +90,7 @@ const userController = {
     try {
       const result = await User.deleteByUserId(id);
       if (result.affectedRows > 0) {
-        return res
-          .status(200)
-          .json({ message: "Usuário deletado com sucesso" });
+        return res.status(204).send();
       } else {
         return res.json({ message: "Usuário não encontrado" });
       }

@@ -127,7 +127,7 @@ const estoqueController = {
     try {
       const result = await Estoque.deleteStock(id);
       if (result.affectedRows > 0) {
-        res.status(200).json({ message: "Estoque deletado com sucesso!" });
+        res.status(204).send();
       } else {
         res.status(400).json({ message: "Estoque não encontrado" });
       }

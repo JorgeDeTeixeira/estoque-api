@@ -152,8 +152,6 @@ const itemController = {
       );
       if (result.affectedRows > 0) {
         res.status(200).json({ message: "Item atualizado com sucesso" });
-      } else {
-        res.status(404).json({ message: "Item não encontrado" });
       }
     } catch (error) {
       console.error("Erro ao atualizar item:", error.message);
@@ -186,9 +184,7 @@ const itemController = {
 
       const result = await Item.deleteItem(id);
       if (result.affectedRows > 0) {
-        res.status(200).json({ message: "Item deletado com sucesso" });
-      } else {
-        res.status(404).json({ message: "Item não encontrado" });
+        res.status(204).send();
       }
     } catch (error) {
       console.error("Erro ao deletar item:", error.message);
